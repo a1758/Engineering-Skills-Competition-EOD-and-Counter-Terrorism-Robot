@@ -7,7 +7,7 @@ Engineering Skills Competition — EOD and Counter-Terrorism Robot
 ## 当前项目状态
 
 - 当前仓库主要为 **OpenMV 端代码和接口文档**，不包含完整 STM32 固件工程。
-- 根目录 `main.py` 目前是空文件，不能直接作为完整任务入口运行。请先使用 `test/` 下对应的独立脚本验证单项功能。
+- 根目录 `main.py` 为当前 OpenMV 联调入口，包含二维码、小球夹取、目标任务及视觉纠偏相关逻辑。默认 `OPERATION_MODE = "INTEGRATION"`，可按脚本配置切换为 `DEBUG` 或 `CALIBRATE`；运行前先核对硬件参数和 STM32 协议。
 - `main.py历史版本/` 保存之前的集成程序和自动保存版本，仅供参考；其中的启动方式和协议可能与当前独立脚本不同。
 - **K230 推理程序、训练数据和模型权重尚未加入本仓库**。YOLO 检测与图像分类为后续候选方案，尚未确定最终模型。
 - 各脚本属于不同联调阶段，运行前应核对所用 STM32 程序、命令、引脚和相机参数。
@@ -29,7 +29,7 @@ Engineering Skills Competition — EOD and Counter-Terrorism Robot
 ```text
 .
 ├── README.md                  # 项目介绍与使用说明
-├── main.py                    # 当前为空，待后续整理集成入口
+├── main.py                    # 当前 OpenMV 联调入口
 ├── main_flow.md               # OpenMV 与 STM32 实际联调流程
 ├── test/                      # 独立任务与硬件测试脚本
 ├── docs/                      # 串口协议、联调说明和项目报告
@@ -66,7 +66,7 @@ Engineering Skills Competition — EOD and Counter-Terrorism Robot
 3. 核对 `UART_ID`、`UART_BAUD`、相机方向、舵机引脚、角度范围及颜色阈值等参数。
 4. 对提供 `RUN_MODE` 的脚本，按需求选择 `TEST` 或 `LINK`。例如二维码脚本当前默认 `LINK`，小球脚本当前默认 `TEST`；不同脚本的测试模式行为以其实现为准。
 5. 在 IDE 中运行并查看串口日志、图像叠加和任务状态。先验证独立功能，再与 STM32 联调。
-6. 如需脱机运行，将已验证的脚本通过 IDE 保存到设备端 `main.py`。根目录的空 `main.py` 不能直接用于该步骤。
+6. 如需脱机运行，将已验证的根目录 `main.py` 或所选独立脚本通过 IDE 保存到设备端 `main.py`。使用集成入口时，先确认 `OPERATION_MODE` 和任务握手与 STM32 固件一致。
 
 颜色 LAB 阈值、ROI、轨道中心偏移、相机安装方向和舵机角度均需按现场光照与机械结构标定，历史参数不能直接作为比赛最终参数。
 
@@ -91,6 +91,8 @@ Engineering Skills Competition — EOD and Counter-Terrorism Robot
 | OpenMV → STM32 | `VERR 0 0.0 0.0 0 0` | 无有效轨道数据 |
 
 固定命令与 `VERR` 数据的解析规则不同；具体发送结束符、接收缓冲和任务时序请参考对应协议。部分历史脚本使用 `START` 或其他握手，不能与当前 `qr` 流程直接混用。
+
+上表汇总不同联调脚本的常用协议。当前根目录 `main.py` 的接收命令以其 `COMMANDS` 和 `handle_command()` 为准；文件顶部关于 `correct` 的历史注释与当前命令列表存在差异，不能仅按该注释发送纠偏命令。
 
 优先阅读：
 
